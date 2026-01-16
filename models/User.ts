@@ -24,6 +24,7 @@ const UserSchema = new Schema<IUser>(
     fullName: {
       type: String,
       required: [true, "Full name is required"],
+      trim: true,
     },
 
     // Email: Must be unique; an index is created in MongoDB for this
@@ -33,12 +34,14 @@ const UserSchema = new Schema<IUser>(
       unique: true,
       lowercase: true, // Standardizes email format
       trim: true,
+      index: true, // Add index for faster lookups
     },
 
     // Phone: Stored as string to preserve formatting/leading zeros
     phone: {
       type: String,
       required: [true, "Phone number is required"],
+      trim: true,
     },
 
     // Profile Image: Storage of the Cloudinary Secure URL
@@ -58,6 +61,10 @@ const UserSchema = new Schema<IUser>(
     timestamps: true,
   }
 );
+
+// Add compound index for better query performance
+UserSchema.index({ createdAt: -1 });
+UserSchema.index({ email: 1, createdAt: -1 });
 
 /**
  * Model Export

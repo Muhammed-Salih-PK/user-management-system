@@ -6,7 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, RegisterFormData } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import imageCompression from "browser-image-compression";
 import {
   Card,
   CardContent,
@@ -47,6 +48,7 @@ import { toast } from "sonner";
  */
 export default function UserForm() {
   const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -90,7 +92,7 @@ export default function UserForm() {
 
   /**
    * Validates and processes the selected image file.
-   * Also simulates an upload progress for better UX.
+   * Compresses the image to reduce size and improve upload speed.
    */
   const handleImageFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -102,17 +104,31 @@ export default function UserForm() {
       return;
     }
 
-    // Revoke old URL if it exists
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-
-    // Simulate upload progress
-    setUploadProgress(100);
-
-    setImageFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    setImageLoading(true);
     setError(null);
+
+    try {
+      // Compress the image
+      const options = {
+        maxSizeMB: 1, // Maximum size in MB
+        maxWidthOrHeight: 800, // Maximum width or height
+        useWebWorker: true,
+      };
+      const compressedFile = await imageCompression(file, options);
+
+      // Revoke old URL if it exists
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
+      setImageFile(compressedFile);
+      setPreviewUrl(URL.createObjectURL(compressedFile));
+      setUploadProgress(100);
+    } catch (error) {
+      setError("Failed to process image. Please try again.");
+    } finally {
+      setImageLoading(false);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -201,11 +217,7 @@ export default function UserForm() {
     <div className='min-h-screen bg-linear-to-br from-background via-background to-primary/5 py-12 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-2xl mx-auto'>
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className='text-center mb-10'
-        >
+        <div className='text-center mb-10 animate-in fade-in slide-in-from-top-5 duration-500'>
           <div className='inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-primary to-primary/80 rounded-2xl shadow-lg mb-6'>
             <UserPlus className='w-10 h-10 text-primary-foreground' />
           </div>
@@ -219,14 +231,10 @@ export default function UserForm() {
             Create your account and start managing users with our powerful
             platform
           </p>
-        </motion.div>
+        </div>
 
         {/* Form Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+        <motion.div className='animate-in fade-in slide-in-from-bottom-5 duration-500 delay-100'>
           <Card className='border-border/40 bg-card/50 backdrop-blur-sm shadow-xl overflow-hidden'>
             <CardHeader className='pb-6'>
               <CardTitle className='text-2xl flex items-center gap-2'>
@@ -239,22 +247,15 @@ export default function UserForm() {
             </CardHeader>
 
             <CardContent className='pb-6'>
-              <AnimatePresence>
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className='mb-6'
-                  >
-                    <Alert variant='destructive'>
-                      <AlertCircle className='h-4 w-4' />
-                      <AlertTitle>Error</AlertTitle>
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {error && (
+                <div className='mb-6 animate-in fade-in slide-in-from-top-2 duration-300'>
+                  <Alert variant='destructive'>
+                    <AlertCircle className='h-4 w-4' />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit(onSubmit)} className='space-y-8'>
                 {/* Personal Information */}
@@ -436,6 +437,14 @@ export default function UserForm() {
                         </div>
                       )}
                     </div>
+                    {imageLoading && (
+                      <div className='flex items-center justify-center gap-2 py-4'>
+                        <Loader2 className='w-4 h-4 animate-spin text-primary' />
+                        <span className='text-sm text-muted-foreground'>
+                          Processing image...
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -502,43 +511,6 @@ export default function UserForm() {
             </CardFooter>
           </Card>
         </motion.div>
-
-        {/* Success Modal */}
-        <AnimatePresence>
-          {success && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className='max-w-md w-full'
-              >
-                <Card className='border-0 shadow-2xl'>
-                  <CardContent className='p-8 text-center'>
-                    <div className='w-20 h-20 bg-linear-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6'>
-                      <CheckCircle className='w-10 h-10 text-white' />
-                    </div>
-                    <h3 className='text-2xl font-bold mb-3'>
-                      Account Created!
-                    </h3>
-                    <p className='text-muted-foreground mb-6'>
-                      Your account has been successfully created. Redirecting to
-                      dashboard...
-                    </p>
-                    <div className='inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full'>
-                      <Loader2 className='w-6 h-6 text-primary animate-spin' />
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );

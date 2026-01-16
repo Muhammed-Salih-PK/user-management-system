@@ -1,4 +1,3 @@
-
 import cloudinary from "@/lib/cloudinary";
 import connectDB from "@/lib/mongodb";
 import { registerSchema } from "@/lib/schemas";
@@ -33,7 +32,7 @@ export async function GET() {
 
     return NextResponse.json(users);
   } catch (err) {
-    console.log(err)
+    console.log(err);
     return NextResponse.json(
       { message: "Something went wrong!" },
       { status: 500 }
@@ -52,93 +51,100 @@ export async function GET() {
  */
 export async function POST(req: Request) {
   try {
-    // 1. Initialize Database Connection
+    const formData = await req.formData();
+    const fullName = formData.get("fullName")?.toString().trim();
+    const email = formData.get("email")?.toString().trim().toLowerCase();
+    const phone = formData.get("phone")?.toString().trim();
+    const image = formData.get("image"); // don't cast
+
+    // Check all fields present
+    if (!fullName || !email || !phone || !image || !(image instanceof Blob)) {
+      console.log("Missing or invalid fields");
+      return NextResponse.json(
+        { message: "All fields including profile image are required" },
+        { status: 400 }
+      );
+    }
+
+    // Zod validation
+    let validatedData;
+    try {
+      validatedData = registerSchema.parse({ fullName, email, phone });
+    } catch (err: any) {
+      return NextResponse.json(
+        { message: "Validation failed", errors: err.errors },
+        { status: 400 }
+      );
+    }
+
+    // Connect DB
     await connectDB();
 
-    // 2️. Parse multipart/form-data
-    const formData = await req.formData();
-    const fullName = formData.get("fullName") as string;
-    const email = formData.get("email") as string;
-    const phone = formData.get("phone") as string;
-    const image = formData.get("image") as File | null;
-
-    // 3. Validate required fields
-    if (!image) {
-      return NextResponse.json(
-        { message: "Profile image is required" },
-        { status: 400 }
-      );
-    }
-
-    // 4. Validate data against Zod/Joi schema defined in @/lib/schemas
-    const validatedData = registerSchema.parse({
-      fullName,
-      email,
-      phone,
-    });
-
-    // 5. Unique Email Check (Requirement: "Email ID must be unique")
-    const existingUser = await User.findOne({ email });
+    // Check email uniqueness
+    const existingUser = await User.findOne({ email: validatedData.email })
+      .select("_id")
+      .lean();
     if (existingUser) {
       return NextResponse.json(
-        { message: "This email ID is already registered." },
+        { message: "Email already registered" },
         { status: 400 }
       );
     }
 
-    // 6️. Upload Image to Cloudinary
-    const buffer = Buffer.from(await image.arrayBuffer());
+    // Prepare image buffer
+    const imageBuffer = Buffer.from(await image.arrayBuffer());
 
+    // Upload to Cloudinary
     const uploadResult = await new Promise<any>((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
           {
             folder: "hachberriesprofiles",
             resource_type: "image",
+            width: 800,
+            height: 800,
+            crop: "limit",
           },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
+          (err, result) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
           }
         )
-        .end(buffer);
+        .end(imageBuffer);
     });
 
-    // 7. Create User Record in MongoDB
+    // Create user
     const user = await User.create({
       ...validatedData,
       imageUrl: uploadResult.secure_url,
       imagePublicId: uploadResult.public_id,
     });
 
-    // 8. Prepare Success Response
-    const response = NextResponse.json(
-      { success: true, user: user },
-      { status: 201 }
-    );
-
-    // 9. Set "Pseudo-Session" Cookie
-    // Requirement: "User must register again using a new email ID to access the list page again"
-    // httpOnly: true prevents client-side JS from tampering with the cookie for security
-    response.cookies.set("registered", "true", {
+    // Send response with cookie
+    const res = NextResponse.json({ success: true, user }, { status: 201 });
+    res.cookies.set("registered", "true", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Only use HTTPS in production
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
+      maxAge: 60 * 60 * 24 * 7,
     });
 
-    return response;
-  } catch (error: any) {
-    // Handle Zod validation errors specifically if needed
-    if (error.name === "ZodError") {
+    return res;
+  } catch (err: any) {
+    if (err.name === "ZodError") {
+      console.log("Zod error caught in outer catch:", err.errors);
       return NextResponse.json(
-        { message: "Validation failed", errors: error.errors },
+        { message: "Validation failed", errors: err.errors },
         { status: 400 }
       );
     }
-
+    console.error("Unhandled registration error:", err);
     return NextResponse.json(
-      { message: "Registration failed. Please try again later." },
+      { message: "Registration failed" },
       { status: 500 }
     );
   }
