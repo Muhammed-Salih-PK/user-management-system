@@ -7,7 +7,14 @@ import { registerSchema, RegisterFormData } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,20 +23,20 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Upload, 
-  Camera, 
-  CheckCircle, 
-  AlertCircle, 
-  Loader2, 
+import {
+  User,
+  Mail,
+  Phone,
+  Upload,
+  Camera,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
   Shield,
   Sparkles,
   ArrowRight,
   X,
-  UserPlus
+  UserPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -101,16 +108,7 @@ export default function UserForm() {
     }
 
     // Simulate upload progress
-    setUploadProgress(0);
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 50);
+    setUploadProgress(100);
 
     setImageFile(file);
     setPreviewUrl(URL.createObjectURL(file));
@@ -179,7 +177,7 @@ export default function UserForm() {
 
       setSuccess(true);
       reset();
-      
+
       // Cleanup preview URL
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
@@ -187,11 +185,8 @@ export default function UserForm() {
       setPreviewUrl(null);
       setImageFile(null);
 
-      // Redirect to dashboard after a short delay to show success state
-      setTimeout(() => {
-        router.push("/dashboard");
-        router.refresh();
-      }, 2000);
+      router.push("/dashboard");
+      router.refresh();
     } catch (err: any) {
       toast.error("An error occurred while creating the account.");
       setError(err.message);
@@ -203,25 +198,26 @@ export default function UserForm() {
   const watchedValues = watch();
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-background via-background to-primary/5 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
+    <div className='min-h-screen bg-linear-to-br from-background via-background to-primary/5 py-12 px-4 sm:px-6 lg:px-8'>
+      <div className='max-w-2xl mx-auto'>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
+          className='text-center mb-10'
         >
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-primary to-primary/80 rounded-2xl shadow-lg mb-6">
-            <UserPlus className="w-10 h-10 text-primary-foreground" />
+          <div className='inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-primary to-primary/80 rounded-2xl shadow-lg mb-6'>
+            <UserPlus className='w-10 h-10 text-primary-foreground' />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight mb-4">
+          <h1 className='text-4xl font-bold tracking-tight mb-4'>
             Join Our{" "}
-            <span className="bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <span className='bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent'>
               Community
             </span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-lg mx-auto">
-            Create your account and start managing users with our powerful platform
+          <p className='text-lg text-muted-foreground max-w-lg mx-auto'>
+            Create your account and start managing users with our powerful
+            platform
           </p>
         </motion.div>
 
@@ -231,10 +227,10 @@ export default function UserForm() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="border-border/40 bg-card/50 backdrop-blur-sm shadow-xl overflow-hidden">
-            <CardHeader className="pb-6">
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <User className="w-6 h-6 text-primary" />
+          <Card className='border-border/40 bg-card/50 backdrop-blur-sm shadow-xl overflow-hidden'>
+            <CardHeader className='pb-6'>
+              <CardTitle className='text-2xl flex items-center gap-2'>
+                <User className='w-6 h-6 text-primary' />
                 User Registration
               </CardTitle>
               <CardDescription>
@@ -242,17 +238,17 @@ export default function UserForm() {
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="pb-6">
+            <CardContent className='pb-6'>
               <AnimatePresence>
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="mb-6"
+                    className='mb-6'
                   >
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
+                    <Alert variant='destructive'>
+                      <AlertCircle className='h-4 w-4' />
                       <AlertTitle>Error</AlertTitle>
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
@@ -260,78 +256,89 @@ export default function UserForm() {
                 )}
               </AnimatePresence>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+              <form onSubmit={handleSubmit(onSubmit)} className='space-y-8'>
                 {/* Personal Information */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary" />
-                    <h3 className="font-semibold text-lg">Personal Information</h3>
-                    <Badge variant="outline" className="ml-2">
+                <div className='space-y-6'>
+                  <div className='flex items-center gap-2'>
+                    <div className='w-2 h-2 rounded-full bg-primary' />
+                    <h3 className='font-semibold text-lg'>
+                      Personal Information
+                    </h3>
+                    <Badge variant='outline' className='ml-2'>
                       Required
                     </Badge>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="fullName" className="flex items-center gap-2">
-                        <User className="w-4 h-4" />
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                    <div className='space-y-2'>
+                      <Label
+                        htmlFor='fullName'
+                        className='flex items-center gap-2'
+                      >
+                        <User className='w-4 h-4' />
                         Full Name
                       </Label>
                       <Input
-                        id="fullName"
+                        id='fullName'
                         {...register("fullName")}
-                        placeholder="John Doe"
+                        placeholder='John Doe'
                         className={cn(
-                          errors.fullName && "border-destructive focus-visible:ring-destructive"
+                          errors.fullName &&
+                            "border-destructive focus-visible:ring-destructive"
                         )}
                       />
                       {errors.fullName && (
-                        <p className="text-sm text-destructive flex items-center gap-1">
-                          <AlertCircle className="w-4 h-4" />
+                        <p className='text-sm text-destructive flex items-center gap-1'>
+                          <AlertCircle className='w-4 h-4' />
                           {errors.fullName.message}
                         </p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="flex items-center gap-2">
-                        <Mail className="w-4 h-4" />
+                    <div className='space-y-2'>
+                      <Label
+                        htmlFor='email'
+                        className='flex items-center gap-2'
+                      >
+                        <Mail className='w-4 h-4' />
                         Email Address
                       </Label>
                       <Input
-                        id="email"
-                        type="email"
+                        id='email'
+                        type='email'
                         {...register("email")}
-                        placeholder="john@example.com"
+                        placeholder='john@example.com'
                         className={cn(
-                          errors.email && "border-destructive focus-visible:ring-destructive"
+                          errors.email &&
+                            "border-destructive focus-visible:ring-destructive"
                         )}
                       />
                       {errors.email && (
-                        <p className="text-sm text-destructive flex items-center gap-1">
-                          <AlertCircle className="w-4 h-4" />
+                        <p className='text-sm text-destructive flex items-center gap-1'>
+                          <AlertCircle className='w-4 h-4' />
                           {errors.email.message}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
+                  <div className='space-y-2'>
+                    <Label htmlFor='phone' className='flex items-center gap-2'>
+                      <Phone className='w-4 h-4' />
                       Phone Number
                     </Label>
                     <Input
-                      id="phone"
+                      id='phone'
                       {...register("phone")}
-                      placeholder="+1 (555) 123-4567"
+                      placeholder='+91 123-4567-89'
                       className={cn(
-                        errors.phone && "border-destructive focus-visible:ring-destructive"
+                        errors.phone &&
+                          "border-destructive focus-visible:ring-destructive"
                       )}
                     />
                     {errors.phone && (
-                      <p className="text-sm text-destructive flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
+                      <p className='text-sm text-destructive flex items-center gap-1'>
+                        <AlertCircle className='w-4 h-4' />
                         {errors.phone.message}
                       </p>
                     )}
@@ -341,15 +348,15 @@ export default function UserForm() {
                 <Separator />
 
                 {/* Profile Picture */}
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
-                      <h3 className="font-semibold text-lg">Profile Picture</h3>
+                <div className='space-y-6'>
+                  <div className='flex items-center justify-between'>
+                    <div className='flex items-center gap-2'>
+                      <div className='w-2 h-2 rounded-full bg-primary' />
+                      <h3 className='font-semibold text-lg'>Profile Picture</h3>
                     </div>
                     {imageFile && (
-                      <Badge variant="secondary">
-                        <CheckCircle className="w-3 h-3 mr-1" />
+                      <Badge variant='secondary'>
+                        <CheckCircle className='w-3 h-3 mr-1' />
                         Uploaded
                       </Badge>
                     )}
@@ -366,56 +373,64 @@ export default function UserForm() {
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
-                    onClick={() => document.getElementById("imageInput")?.click()}
+                    onClick={() =>
+                      document.getElementById("imageInput")?.click()
+                    }
                   >
                     <input
-                      id="imageInput"
-                      type="file"
-                      accept="image/*"
+                      id='imageInput'
+                      type='file'
+                      accept='image/*'
                       onChange={handleImageChange}
-                      className="hidden"
+                      className='hidden'
                     />
 
-                    <div className="p-6 text-center">
+                    <div className='p-6 text-center'>
                       {previewUrl ? (
-                        <div className="space-y-4">
-                          <div className="relative inline-block">
-                            <Avatar className="w-32 h-32 border-4 border-background shadow-lg">
-                              <AvatarImage src={previewUrl} alt="Profile preview" />
-                              <AvatarFallback className="text-lg">
+                        <div className='space-y-4'>
+                          <div className='relative inline-block'>
+                            <Avatar className='w-32 h-32 border-4 border-background shadow-lg'>
+                              <AvatarImage
+                                src={previewUrl}
+                                alt='Profile preview'
+                              />
+                              <AvatarFallback className='text-lg'>
                                 {watchedValues.fullName?.charAt(0) || "U"}
                               </AvatarFallback>
                             </Avatar>
                             <Button
-                              type="button"
-                              size="icon"
-                              variant="destructive"
-                              className="absolute -top-2 -right-2 h-8 w-8 rounded-full"
+                              type='button'
+                              size='icon'
+                              variant='destructive'
+                              className='absolute -top-2 -right-2 h-8 w-8 rounded-full'
                               onClick={(e) => {
                                 e.stopPropagation();
                                 removeImage();
                               }}
                             >
-                              <X className="w-4 h-4" />
+                              <X className='w-4 h-4' />
                             </Button>
                           </div>
                           {uploadProgress > 0 && uploadProgress < 100 && (
-                            <Progress value={uploadProgress} className="w-32 mx-auto" />
+                            <Progress
+                              value={uploadProgress}
+                              className='w-32 mx-auto'
+                            />
                           )}
-                          <p className="text-sm text-muted-foreground">
+                          <p className='text-sm text-muted-foreground'>
                             Click or drag to change image
                           </p>
                         </div>
                       ) : (
                         <div>
-                          <div className="w-20 h-20 bg-linear-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Camera className="w-10 h-10 text-primary" />
+                          <div className='w-20 h-20 bg-linear-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mx-auto mb-4'>
+                            <Camera className='w-10 h-10 text-primary' />
                           </div>
-                          <p className="font-medium mb-2">Upload your photo</p>
-                          <p className="text-sm text-muted-foreground mb-4">
+                          <p className='font-medium mb-2'>Upload your photo</p>
+                          <p className='text-sm text-muted-foreground mb-4'>
                             Drag & drop or click to browse
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className='text-xs text-muted-foreground'>
                             JPG, PNG, GIF • Max 5MB
                           </p>
                         </div>
@@ -425,41 +440,47 @@ export default function UserForm() {
                 </div>
 
                 {/* Form Status */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-green-500" />
-                      <span className="text-muted-foreground">Your data is secured</span>
+                <div className='space-y-4'>
+                  <div className='flex items-center justify-between text-sm'>
+                    <div className='flex items-center gap-2'>
+                      <Shield className='w-4 h-4 text-green-500' />
+                      <span className='text-muted-foreground'>
+                        Your data is secured
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className='flex items-center gap-2'>
                       {isValid && (
-                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <CheckCircle className='w-4 h-4 text-green-500' />
                       )}
-                      <span className={cn(
-                        "font-medium",
-                        isValid ? "text-green-600" : "text-muted-foreground"
-                      )}>
-                        {isValid ? "All requirements met" : "Fill all required fields"}
+                      <span
+                        className={cn(
+                          "font-medium",
+                          isValid ? "text-green-600" : "text-muted-foreground"
+                        )}
+                      >
+                        {isValid
+                          ? "All requirements met"
+                          : "Fill all required fields"}
                       </span>
                     </div>
                   </div>
 
                   <Button
-                    type="submit"
-                    size="lg"
+                    type='submit'
+                    size='lg'
                     disabled={loading || success || !isValid || !imageFile}
-                    className="w-full h-12 text-base shadow-lg hover:shadow-xl transition-all"
+                    className='w-full h-12 text-base shadow-lg hover:shadow-xl transition-all'
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                         Creating Account...
                       </>
                     ) : (
                       <>
-                        <Sparkles className="mr-2 h-4 w-4" />
+                        <Sparkles className='mr-2 h-4 w-4' />
                         Create Account
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        <ArrowRight className='ml-2 h-4 w-4' />
                       </>
                     )}
                   </Button>
@@ -467,14 +488,14 @@ export default function UserForm() {
               </form>
             </CardContent>
 
-            <CardFooter className="bg-muted/30 border-t pt-6">
-              <div className="w-full text-center text-sm text-muted-foreground">
+            <CardFooter className='bg-muted/30 border-t pt-6'>
+              <div className='w-full text-center text-sm text-muted-foreground'>
                 By registering, you agree to our{" "}
-                <Button variant="link" className="p-0 h-auto font-semibold">
+                <Button variant='link' className='p-0 h-auto font-semibold'>
                   Terms of Service
                 </Button>{" "}
                 and{" "}
-                <Button variant="link" className="p-0 h-auto font-semibold">
+                <Button variant='link' className='p-0 h-auto font-semibold'>
                   Privacy Policy
                 </Button>
               </div>
@@ -489,25 +510,28 @@ export default function UserForm() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'
             >
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="max-w-md w-full"
+                className='max-w-md w-full'
               >
-                <Card className="border-0 shadow-2xl">
-                  <CardContent className="p-8 text-center">
-                    <div className="w-20 h-20 bg-linear-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle className="w-10 h-10 text-white" />
+                <Card className='border-0 shadow-2xl'>
+                  <CardContent className='p-8 text-center'>
+                    <div className='w-20 h-20 bg-linear-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6'>
+                      <CheckCircle className='w-10 h-10 text-white' />
                     </div>
-                    <h3 className="text-2xl font-bold mb-3">Account Created!</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Your account has been successfully created. Redirecting to dashboard...
+                    <h3 className='text-2xl font-bold mb-3'>
+                      Account Created!
+                    </h3>
+                    <p className='text-muted-foreground mb-6'>
+                      Your account has been successfully created. Redirecting to
+                      dashboard...
                     </p>
-                    <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full">
-                      <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                    <div className='inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full'>
+                      <Loader2 className='w-6 h-6 text-primary animate-spin' />
                     </div>
                   </CardContent>
                 </Card>

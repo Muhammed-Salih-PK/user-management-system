@@ -175,14 +175,17 @@ const GridViewCard = memo(
                   <Copy className='w-4 h-4 mr-2' />
                   Copy Email
                 </DropdownMenuItem>
-                <Separator />
-                <DropdownMenuItem
-                  onClick={() => onDelete(user._id, user.imagePublicId)}
-                  className='text-destructive focus:text-destructive'
+                <DeleteConfirmDialog
+                  onConfirm={() => onDelete(user._id, user.imagePublicId)}
                 >
-                  <Trash2 className='w-4 h-4 mr-2' />
-                  Delete User
-                </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className='text-destructive focus:text-destructive'
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    <Trash2 className='w-4 h-4 mr-2' />
+                    Delete User
+                  </DropdownMenuItem>
+                </DeleteConfirmDialog>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -365,13 +368,18 @@ const ListViewCard = memo(
                     Call User
                   </DropdownMenuItem>
                   <Separator />
-                  <DropdownMenuItem
-                    onClick={() => onDelete(user._id, user.imagePublicId)}
-                    className='text-destructive focus:text-destructive'
+                  <DeleteConfirmDialog
+                    loading={deletingId === user._id}
+                    onConfirm={() => onDelete(user._id, user.imagePublicId)}
                   >
-                    <Trash2 className='w-4 h-4 mr-2' />
-                    Delete User
-                  </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className='text-destructive focus:text-destructive'
+                      onSelect={(e) => e.preventDefault()} 
+                    >
+                      <Trash2 className='w-4 h-4 mr-2' />
+                      Delete User
+                    </DropdownMenuItem>
+                  </DeleteConfirmDialog>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

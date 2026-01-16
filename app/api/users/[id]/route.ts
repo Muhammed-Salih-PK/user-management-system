@@ -2,6 +2,7 @@ import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import cloudinary from "@/lib/cloudinary";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export const runtime = "nodejs";
 
@@ -15,6 +16,14 @@ export async function GET(
   context: RouteContext<"/api/users/[id]">
 ) {
   try {
+    // Check authentication
+    const cookieStore = await cookies();
+    const isRegistered = cookieStore.get("registered");
+
+    if (!isRegistered) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     await connectDB();
 
     const { id } = await context.params;
@@ -43,6 +52,13 @@ export async function PUT(
   context: RouteContext<"/api/users/[id]">
 ) {
   try {
+    // Check authentication
+    const cookieStore = await cookies();
+    const isRegistered = cookieStore.get("registered");
+
+    if (!isRegistered) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     await connectDB();
     const { id } = await context.params;
 
@@ -98,6 +114,13 @@ export async function DELETE(
   context: RouteContext<"/api/users/[id]">
 ) {
   try {
+    // Check authentication
+    const cookieStore = await cookies();
+    const isRegistered = cookieStore.get("registered");
+
+    if (!isRegistered) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     await connectDB();
     const { id } = await context.params;
 

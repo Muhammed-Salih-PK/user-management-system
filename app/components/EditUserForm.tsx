@@ -229,10 +229,13 @@ export default function EditUserForm({ initialUser }: EditUserFormProps) {
         formData.append("image", imageFile);
       }
 
-      const res = await fetch(`/api/users/${initialUser.id}`, {
-        method: "PUT",
-        body: formData,
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL}/api/users/${initialUser.id}`,
+        {
+          method: "PUT",
+          body: formData,
+        }
+      );
 
       if (!res.ok) {
         const err = await res.json();
@@ -246,10 +249,8 @@ export default function EditUserForm({ initialUser }: EditUserFormProps) {
         URL.revokeObjectURL(previewUrl);
       }
 
-      setTimeout(() => {
-        router.push("/dashboard");
-        router.refresh();
-      }, 1500);
+      router.push("/dashboard");
+      router.refresh();
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -342,7 +343,6 @@ export default function EditUserForm({ initialUser }: EditUserFormProps) {
               </Alert>
             </motion.div>
           )}
-
         </AnimatePresence>
 
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>

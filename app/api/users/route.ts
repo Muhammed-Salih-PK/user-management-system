@@ -1,7 +1,9 @@
+
 import cloudinary from "@/lib/cloudinary";
 import connectDB from "@/lib/mongodb";
 import { registerSchema } from "@/lib/schemas";
 import User from "@/models/User";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -15,6 +17,14 @@ export const runtime = "nodejs";
  */
 export async function GET() {
   try {
+    // Check authentication
+    const cookieStore = await cookies();
+    const isRegistered = cookieStore.get("registered");
+
+    if (!isRegistered) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     // Establish database connection
     await connectDB();
 
@@ -23,7 +33,7 @@ export async function GET() {
 
     return NextResponse.json(users);
   } catch (err) {
-
+    console.log(err)
     return NextResponse.json(
       { message: "Something went wrong!" },
       { status: 500 }
