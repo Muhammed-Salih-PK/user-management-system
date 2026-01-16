@@ -1,4 +1,3 @@
----
 
 # User Registration & Management System
 
