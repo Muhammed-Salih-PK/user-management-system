@@ -1,7 +1,10 @@
+import cloudinary from "@/lib/cloudinary";
 import connectDB from "@/lib/mongodb";
 import { registerSchema } from "@/lib/schemas";
 import User from "@/models/User";
 import { NextResponse } from "next/server";
+
+export const runtime = "nodejs";
 
 /**
  * @route   GET /api/users
@@ -20,7 +23,7 @@ export async function GET() {
 
     return NextResponse.json(users);
   } catch (err) {
-    console.error("GET_USERS_ERROR:", err);
+
     return NextResponse.json(
       { message: "Something went wrong!" },
       { status: 500 }
@@ -42,15 +45,30 @@ export async function POST(req: Request) {
     // 1. Initialize Database Connection
     await connectDB();
 
-    // 2. Parse and Validate Request Body
-    // Note: If handling actual Files, use await req.formData() instead
-    const body = await req.json();
+    // 2️. Parse multipart/form-data
+    const formData = await req.formData();
+    const fullName = formData.get("fullName") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+    const image = formData.get("image") as File | null;
 
-    // Validate data against Zod/Joi schema defined in @/lib/schemas
-    const data = registerSchema.parse(body);
+    // 3. Validate required fields
+    if (!image) {
+      return NextResponse.json(
+        { message: "Profile image is required" },
+        { status: 400 }
+      );
+    }
 
-    // 3. Unique Email Check (Requirement: "Email ID must be unique")
-    const existingUser = await User.findOne({ email: data.email });
+    // 4. Validate data against Zod/Joi schema defined in @/lib/schemas
+    const validatedData = registerSchema.parse({
+      fullName,
+      email,
+      phone,
+    });
+
+    // 5. Unique Email Check (Requirement: "Email ID must be unique")
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
         { message: "This email ID is already registered." },
@@ -58,16 +76,38 @@ export async function POST(req: Request) {
       );
     }
 
-    // 4. Create User Record in MongoDB
-    const user = await User.create(data);
+    // 6️. Upload Image to Cloudinary
+    const buffer = Buffer.from(await image.arrayBuffer());
 
-    // 5. Prepare Success Response
+    const uploadResult = await new Promise<any>((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder: "hachberriesprofiles",
+            resource_type: "image",
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        )
+        .end(buffer);
+    });
+
+    // 7. Create User Record in MongoDB
+    const user = await User.create({
+      ...validatedData,
+      imageUrl: uploadResult.secure_url,
+      imagePublicId: uploadResult.public_id,
+    });
+
+    // 8. Prepare Success Response
     const response = NextResponse.json(
       { success: true, user: user },
       { status: 201 }
     );
 
-    // 6. Set "Pseudo-Session" Cookie
+    // 9. Set "Pseudo-Session" Cookie
     // Requirement: "User must register again using a new email ID to access the list page again"
     // httpOnly: true prevents client-side JS from tampering with the cookie for security
     response.cookies.set("registered", "true", {
@@ -87,7 +127,6 @@ export async function POST(req: Request) {
       );
     }
 
-    console.error("POST_USER_ERROR:", error);
     return NextResponse.json(
       { message: "Registration failed. Please try again later." },
       { status: 500 }

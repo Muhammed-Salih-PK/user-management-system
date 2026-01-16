@@ -1,35 +1,90 @@
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import cloudinary from "@/lib/cloudinary";
-import { registerSchema } from "@/lib/schemas";
 import { NextResponse } from "next/server";
+
+export const runtime = "nodejs";
+
+/**
+ * @route   GET /api/users/[id]
+ * @desc    Get a single user details
+ * @access  Private (Dashboard)
+ */
+export async function GET(
+  _req: Request,
+  context: RouteContext<"/api/users/[id]">
+) {
+  try {
+    await connectDB();
+
+    const { id } = await context.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, user: user });
+  } catch (error: any) {
+    return NextResponse.json(
+      { message: error.message || "Update failed" },
+      { status: 400 }
+    );
+  }
+}
 
 /**
  * @route   PUT /api/users/[id]
  * @desc    Update user details
  * @access  Private (Dashboard)
  */
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  _req: Request,
+  context: RouteContext<"/api/users/[id]">
+) {
   try {
     await connectDB();
-    const body = await req.json();
-    const { id } = params;
+    const { id } = await context.params;
 
-    // Validate the updated data
-    const validatedData = registerSchema.parse(body);
+    const formData = await _req.formData();
+    const fullName = formData.get("fullName") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+    const image = formData.get("image") as File | null;
 
-    const updatedUser = await User.findByIdAndUpdate(id, validatedData, {
-      new: true, // Returns the modified document rather than the original
-      runValidators: true,
-    });
-
-    if (!updatedUser) {
+    const user = await User.findById(id);
+    if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, user: updatedUser });
+    if (image) {
+      if (user.imagePublicId) {
+        await cloudinary.uploader.destroy(user.imagePublicId);
+      }
+
+      const buffer = Buffer.from(await image.arrayBuffer());
+
+      const uploadResult = await new Promise<any>((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream({ folder: "hachberriesprofiles" }, (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+          })
+          .end(buffer);
+      });
+      user.imageUrl = uploadResult.secure_url;
+      user.imagePublicId = uploadResult.public_id;
+    }
+
+    user.fullName = fullName;
+    user.email = email;
+    user.phone = phone;
+
+    await user.save();
+
+    return NextResponse.json({ message: "User updated successfully" });
   } catch (error: any) {
-    return NextResponse.json({ message: error.message || "Update failed" }, { status: 400 });
+    return NextResponse.json({ message: "Update failed" }, { status: 400 });
   }
 }
 
@@ -38,10 +93,13 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
  * @desc    Delete user from DB and remove their image from Cloudinary
  * @access  Private (Dashboard)
  */
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _req: Request,
+  context: RouteContext<"/api/users/[id]">
+) {
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await context.params;
 
     // 1. Find the user to get the Cloudinary Public ID
     const user = await User.findById(id);
@@ -58,9 +116,10 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     // 3. Delete the user from MongoDB
     await User.findByIdAndDelete(id);
 
-    return NextResponse.json({ message: "User and associated image deleted successfully" });
+    return NextResponse.json({
+      message: "User and associated image deleted successfully",
+    });
   } catch (error) {
-    console.error("DELETE_ERROR:", error);
     return NextResponse.json({ message: "Deletion failed" }, { status: 500 });
   }
 }

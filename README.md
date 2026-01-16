@@ -1,36 +1,214 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+---
 
-## Getting Started
+# User Registration & Management System
 
-First, run the development server:
+**Next.js Developer Skill Assessment**
+
+## 📌 Project Overview
+
+This project is a **User Registration and Management System** built using **Next.js App Router**.
+It was developed as part of a technical assessment to demonstrate skills in:
+
+* Next.js fundamentals
+* Form handling & validation
+* Database integration
+* Image uploads
+* Basic session-based access control
+* CRUD operations
+
+The application allows users to register with profile details, view a list of registered users, delete users, and logout using a simple session mechanism.
+
+---
+
+## 🚀 Features Implemented
+
+### ✅ Registration Page
+
+* Fields:
+
+  * Full Name
+  * Email ID
+  * Phone Number
+  * Profile Picture (Image Upload)
+* Validations:
+
+  * All fields are mandatory
+  * Email format validation
+  * Phone number numeric validation
+  * Unique email check
+  * Only image files allowed
+* Profile image upload using **Cloudinary**
+* Redirects to user list page after successful registration
+
+---
+
+### ✅ User List Page (Dashboard)
+
+* Displays all registered users in a table
+* Each row includes:
+
+  * Profile picture thumbnail
+  * Full name
+  * Email
+  * Phone number
+  * Delete button
+* Delete user functionality with instant UI update
+* Logout button available
+
+---
+
+### ✅ Session-Based Access Control (No Login)
+
+* Uses a **cookie-based session API**
+* Access to dashboard is allowed only after registration
+* Logout clears session and redirects to registration page
+* No login or password system implemented (as per requirements)
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology               | Usage            |
+| ------------------------ | ---------------- |
+| **Next.js (App Router)** | Framework        |
+| **TypeScript**           | Type safety      |
+| **MongoDB + Mongoose**   | Database         |
+| **Cloudinary**           | Image storage    |
+| **Tailwind CSS**         | Styling          |
+| **Zod**                  | Form validation  |
+| **Cookies API**          | Session handling |
+
+---
+
+## 📂 Project Structure
+
+```
+app/
+├── api/
+│   ├── users/
+│   │   ├── route.ts
+│   ├── upload/
+│   │   ├── route.ts
+│   ├── session/
+│   │   ├── route.ts
+│
+├── registration/
+│   ├── page.tsx
+│
+├── users/
+│   ├── page.tsx
+│
+├── components/
+│   ├── RegistrationForm.tsx
+│   ├── UserTable.tsx
+│
+lib/
+├── db.ts
+├── cloudinary.ts
+├── models/
+│   ├── User.ts
+```
+
+---
+
+## ⚙️ Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+MONGO_URI=mongodb://localhost:27017/user_management_system
+
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+> ⚠️ Never commit `.env.local` to GitHub.
+
+---
+
+## 🧪 Installation & Setup
+
+### 1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/your-username/user-management-nextjs.git
+cd user-management-nextjs
+```
+
+### 2️⃣ Install dependencies
+
+```bash
+npm install
+```
+
+### 3️⃣ Run MongoDB locally
+
+Ensure MongoDB is running on your system:
+
+```bash
+mongod
+```
+
+### 4️⃣ Start the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
+👉 **[http://localhost:3000](http://localhost:3000)**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔄 Application Flow
 
-## Learn More
+1. User lands on **Registration Page**
+2. Fills form and uploads profile image
+3. Image uploads to Cloudinary
+4. User data saved to MongoDB
+5. Session cookie is created
+6. Redirect to **User List Page**
+7. User can:
 
-To learn more about Next.js, take a look at the following resources:
+   * View registered users
+   * Delete users
+   * Logout
+8. Logout clears session and redirects back to registration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧠 Key Notes
 
-## Deploy on Vercel
+* No authentication or login system used (as per requirement)
+* Session is managed using HTTP-only cookies
+* Email uniqueness enforced at database level
+* App Router and Server Components used properly
+* Code is modular and readable
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📦 Submission Details
+
+* **Framework:** Next.js (App Router)
+* **Database:** MongoDB
+* **Language:** TypeScript
+* **Status:** Completed within the given time constraint
+
+---
+
+## 👤 Author
+
+**Muhammed Salih PK**
+Frontend / Full Stack Developer
+GitHub: [https://github.com/Muhammed-Salih-PK](https://github.com/Muhammed-Salih-PK)
+
+---
+
+If you want, I can also:
+
+* Make this README **more recruiter-friendly**
+* Add **screenshots section**
+* Add **API documentation**
+
+Just tell me 👍

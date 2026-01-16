@@ -15,10 +15,8 @@ export const registerSchema = z.object({
   // 3. Phone: Must be exactly 10 digits (Standard Indian Mobile Format)
   // The regex ^\d{10}$ ensures only numbers are allowed and exactly 10 of them
   phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
-
-  // 4. Image URL: Must be a valid URL (returned from Cloudinary)
-  imageUrl: z.string().url("Invalid profile picture URL"),
-
-  // 5. Image Public ID: Required for Cloudinary management (deleting images later)
-  imagePublicId: z.string().min(1, "Cloudinary Public ID is required"),
 });
+
+export type RegisterFormData = z.infer<typeof registerSchema>;
+
+
